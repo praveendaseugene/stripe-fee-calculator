@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Fee Calculator</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #185a9d;
+            --primary-light: #43cea2;
+            --primary-dark: #0f4a8a;
+            --gradient: linear-gradient(135deg, #43cea2, #185a9d);
+            --gradient-hover: linear-gradient(135deg, #3ac397, #134d8f);
+            --dark: #1a1a1a;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --border: rgba(67, 206, 162, 0.3);
+            --success: #28a745;
+            --warning: #ffc107;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: #f5f5f7;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        header {
+            background: var(--gradient);
+            color: white;
+            padding: 28px;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            font-size: 15px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .calculator-container {
+            display: flex;
+            flex-direction: column;
+            padding: 28px;
+        }
+        
+        @media (min-width: 768px) {
+            .calculator-container {
+                flex-direction: row;
+                gap: 28px;
+            }
+            
+            .calculator-section {
+                flex: 1;
+            }
+        }
+        
+        .calculator-section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .section-title svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .settings-icon {
+            cursor: pointer;
+            color: var(--gray);
+            transition: all 0.3s ease;
+            padding: 6px;
+            border-radius: 50%;
+            font-size: 16px;
+        }
+        
+        .settings-icon:hover {
+            color: var(--primary);
+            background: rgba(24, 90, 157, 0.1);
+            transform: rotate(30deg);
+        }
+        
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 26px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(232, 245, 241, 0.3);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.2);
+            background: white;
+        }
+        
+        .btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(24, 90, 157, 0.2);
+            letter-spacing: 0.5px;
+        }
+        
+        .btn:hover {
+            background: var(--gradient-hover);
+            box-shadow: 0 6px 15px rgba(24, 90, 157, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 24px;
+            padding: 22px;
+            background: rgba(232, 245, 241, 0.3);
+            border-radius: 12px;
+            font-size: 16px;
+            border: 1px solid var(--border);
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(67, 206, 162, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            position: relative;
+        }
+        
+        .result-item:hover {
+            background: rgba(67, 206, 162, 0.05);
+        }
+        
+        .result-item:last-child {
+            margin-bottom: 0;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: none;
+        }
+        
+        .result-item .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        
+        .result-item:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-8px);
+        }
+        
+        .card-type {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .card-option {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .card-option input {
+            display: none;
+        }
+        
+        .card-option label {
+            display: block;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(232, 245, 241, 0.3);
+            font-weight: 500;
+        }
+        
+        .card-option input:checked + label {
+            border-color: var(--primary-light);
+            background: rgba(67, 206, 162, 0.1);
+            box-shadow: 0 0 0 1px var(--primary-light);
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        
+        .tab {
+            padding: 14px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary-light);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: var(--gray);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .info-icon {
+            color: var(--primary-light);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .info-icon:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 28px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid var(--border);
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-title svg {
+            color: var(--primary-light);
+        }
+        
+        .close-modal {
+            font-size: 26px;
+            cursor: pointer;
+            color: var(--gray);
+            transition: all 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            color: var(--primary);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            line-height: 1.7;
+            color: var(--dark);
+        }
+        
+        .modal-body ul {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-body li {
+            margin-bottom: 10px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 14px;
+            margin-top: 28px;
+        }
+        
+        .btn-secondary {
+            background: var(--light-gray);
+            color: var(--dark);
+        }
+        
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+        
+        .confirmation-message {
+            display: none;
+            padding: 14px;
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 15px;
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+        
+        .copy-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1001;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .copy-notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Stripe Fee Calculator</h1>
+            <div class="subtitle">Calculate international payment fees for Visa, Mastercard & Amex</div>
+        </header>
+        
+        <div class="calculator-container">
+            <div class="calculator-section">
+                <div class="tabs">
+                    <div class="tab active" data-tab="reverse">Reverse Calculation</div>
+                    <div class="tab" data-tab="forward">Forward Calculation</div>
+                </div>
+                
+                <div class="tab-content" id="forward">
+                    <div class="card">
+                        <div class="section-title">
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                Calculate Fees from Principal
+                            </span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="principal">Principal Amount (₹)</label>
+                            <input type="number" id="principal" placeholder="Enter amount">
+                        </div>
+                        
+                        <div class="card-type">
+                            <div class="card-option">
+                                <input type="radio" id="visa-master" name="card-type" value="3" checked>
+                                <label for="visa-master">Visa/Mastercard</label>
+                            </div>
+                            <div class="card-option">
+                                <input type="radio" id="amex" name="card-type" value="3.5">
+                                <label for="amex">Amex</label>
+                            </div>
+                        </div>
+                        
+                        <button class="btn" id="calculate-fees">Calculate Fees</button>
+                        
+                        <div class="result" id="forward-result">
+                            <div class="result-item" data-value="0">
+                                <span>Stripe Fee:</span>
+                                <span>₹0.00</span>
+                                <div class="tooltip">Click to copy</div>
+                            </div>
+                            <div class="result-item" data-value="0">
+                                <span>Tax (18% on fee):</span>
+                                <span>₹0.00</span>
+                                <div class="tooltip">Click to copy</div>
+                            </div>
+                            <div class="result-item" data-value="0">
+                                <span>Total Fees:</span>
+                                <span>₹0.00</span>
+                                <div class="tooltip">Click to copy</div>
+                            </div>
+                            <div class="result-item" data-value="0">
+                                <span>Amount After Deduction:</span>
+                                <span>₹0.00</span>
+                                <div class="tooltip">Click to copy</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content active" id="reverse">
+                    <div class="card">
+                        <div class="section-title">
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                                </svg>
+                                Calculate Principal from Final Amount
+                            </span>
+                            <i class="fas fa-cog settings-icon" id="settings-button"></i>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="final-amount">Amount After Deduction (₹)</label>
+                            <input type="number" id="final-amount" placeholder="Enter amount">
+                        </div>
+                        
+                        <div class="card-type">
+                            <div class="card-option">
+                                <input type="radio" id="reverse-visa-master" name="reverse-card-type" value="3" checked>
+                                <label for="reverse-visa-master">Visa/Mastercard</label>
+                            </div>
+                            <div class="card-option">
+                                <input type="radio" id="reverse-amex" name="reverse-card-type" value="3.5">
+                                <label for="reverse-amex">Amex</label>
+                            </div>
+                        </div>
+                        
+                        <button class="btn" id="calculate-principal">Calculate Principal</button>
+                        
+                        <div class="result" id="reverse-result">
+                            <div class="result-item" data-value="0">
+                                <span>Stripe Fee:</span>
+                                <span>₹0.00</span>
+                                <div class="tooltip">Click to copy</div>
+                            </div>
+                            <div class="result-item" data-value="0">
+                                <span>Tax (18% on fee):</span>
+                                <span>₹0.00</span>
+                                <div class="tooltip">Click to copy</div>
+                            </div>
+                            <div class="result-item" data-value="0">
+                                <span>Total Fees:</span>
+                                <span>₹0.00</span>
+                                <div class="tooltip">Click to copy</div>
+                            </div>
+                            <div class="result-item" data-value="0">
+                                <span>Required Principal Amount:</span>
+                                <span>₹0.00</span>
+                                <div class="tooltip">Click to copy</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Calculates Stripe fees for international payments with tax on fees</p>
+            <i class="fas fa-info-circle info-icon" id="info-button"></i>
+        </footer>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Fee Settings
+                </div>
+                <div class="close-modal">&times;</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="visa-fee">Visa/Mastercard Fee (%)</label>
+                <input type="number" id="visa-fee" step="0.1" value="3">
+            </div>
+            
+            <div class="form-group">
+                <label for="amex-fee">Amex Fee (%)</label>
+                <input type="number" id="amex-fee" step="0.1" value="3.5">
+            </div>
+            
+            <div class="form-group">
+                <label for="tax-rate">Tax Rate (%)</label>
+                <input type="number" id="tax-rate" step="0.1" value="18">
+            </div>
+            
+            <div class="confirmation-message" id="confirmation-message">
+                Settings saved successfully!
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancel-settings">Cancel</button>
+                <button class="btn" id="save-settings">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="modal" id="info-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    About This Tool
+                </div>
+                <div class="close-modal">&times;</div>
+            </div>
+            
+            <div class="modal-body">
+                <p>This calculator helps you determine Stripe payment fees for international transactions.</p>
+                
+                <ul>
+                    <li><strong>Reverse Calculation</strong>: Enter the amount you want to receive to calculate the required principal</li>
+                    <li><strong>Forward Calculation</strong>: Enter the principal amount to calculate fees and final amount</li>
+                    <li>Supports Visa, Mastercard (3% fee) and Amex (3.5% fee)</li>
+                    <li>Includes 18% tax on processing fees (customizable)</li>
+                    <li>Click on any result value to copy it</li>
+                    <li>Customize fee percentages in settings</li>
+                </ul>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn" id="close-info">Got It!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Copy Notification -->
+    <div class="copy-notification" id="copy-notification">
+        Copied to clipboard!
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize settings
+            let settings = {
+                visaFee: 3,
+                amexFee: 3.5,
+                taxRate: 18
+            };
+            
+            // Tab switching
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs and contents
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Settings Modal functionality
+            const settingsModal = document.getElementById('settings-modal');
+            const settingsButton = document.getElementById('settings-button');
+            const closeSettingsModal = document.querySelector('#settings-modal .close-modal');
+            const cancelSettings = document.getElementById('cancel-settings');
+            
+            settingsButton.addEventListener('click', function() {
+                // Populate modal with current settings
+                document.getElementById('visa-fee').value = settings.visaFee;
+                document.getElementById('amex-fee').value = settings.amexFee;
+                document.getElementById('tax-rate').value = settings.taxRate;
+                
+                settingsModal.style.display = 'flex';
+            });
+            
+            closeSettingsModal.addEventListener('click', function() {
+                settingsModal.style.display = 'none';
+            });
+            
+            cancelSettings.addEventListener('click', function() {
+                settingsModal.style.display = 'none';
+            });
+            
+            // Info Modal functionality
+            const infoModal = document.getElementById('info-modal');
+            const infoButton = document.getElementById('info-button');
+            const closeInfoModal = document.querySelector('#info-modal .close-modal');
+            const closeInfoButton = document.getElementById('close-info');
+            
+            infoButton.addEventListener('click', function() {
+                infoModal.style.display = 'flex';
+            });
+            
+            closeInfoModal.addEventListener('click', function() {
+                infoModal.style.display = 'none';
+            });
+            
+            closeInfoButton.addEventListener('click', function() {
+                infoModal.style.display = 'none';
+            });
+            
+            // Save settings
+            document.getElementById('save-settings').addEventListener('click', function() {
+                const newVisaFee = parseFloat(document.getElementById('visa-fee').value);
+                const newAmexFee = parseFloat(document.getElementById('amex-fee').value);
+                const newTaxRate = parseFloat(document.getElementById('tax-rate').value);
+                
+                if (isNaN(newVisaFee) || isNaN(newAmexFee) || isNaN(newTaxRate)) {
+                    alert('Please enter valid numbers for all fields');
+                    return;
+                }
+                
+                // Show confirmation dialog
+                if (confirm('Are you sure you want to save these settings?')) {
+                    settings.visaFee = newVisaFee;
+                    settings.amexFee = newAmexFee;
+                    settings.taxRate = newTaxRate;
+                    
+                    // Update radio button values
+                    document.querySelector('input[name="card-type"][value="3"]').value = newVisaFee;
+                    document.querySelector('input[name="card-type"][value="3.5"]').value = newAmexFee;
+                    document.querySelector('input[name="reverse-card-type"][value="3"]').value = newVisaFee;
+                    document.querySelector('input[name="reverse-card-type"][value="3.5"]').value = newAmexFee;
+                    
+                    // Show confirmation message
+                    const confirmation = document.getElementById('confirmation-message');
+                    confirmation.style.display = 'block';
+                    setTimeout(() => {
+                        confirmation.style.display = 'none';
+                    }, 3000);
+                    
+                    // Close modal after a delay
+                    setTimeout(() => {
+                        settingsModal.style.display = 'none';
+                    }, 1000);
+                }
+            });
+            
+            // Forward calculation
+            document.getElementById('calculate-fees').addEventListener('click', function() {
+                const principal = parseFloat(document.getElementById('principal').value);
+                if (isNaN(principal)) {
+                    alert('Please enter a valid principal amount');
+                    return;
+                }
+                
+                const feePercentage = parseFloat(document.querySelector('input[name="card-type"]:checked').value);
+                const taxPercentage = settings.taxRate;
+                
+                const stripeFee = principal * feePercentage / 100;
+                const stripeFeeTax = stripeFee * taxPercentage / 100;
+                const totalFees = stripeFee + stripeFeeTax;
+                const amountAfterDeduction = principal - totalFees;
+                
+                const result = document.getElementById('forward-result');
+                const resultItems = result.querySelectorAll('.result-item');
+                
+                resultItems[0].innerHTML = `<span>Stripe Fee (${feePercentage}%):</span> <span>₹${stripeFee.toFixed(2)}</span><div class="tooltip">Click to copy</div>`;
+                resultItems[0].setAttribute('data-value', stripeFee.toFixed(2));
+                
+                resultItems[1].innerHTML = `<span>Tax (${taxPercentage}% on fee):</span> <span>₹${stripeFeeTax.toFixed(2)}</span><div class="tooltip">Click to copy</div>`;
+                resultItems[1].setAttribute('data-value', stripeFeeTax.toFixed(2));
+                
+                resultItems[2].innerHTML = `<span>Total Fees:</span> <span>₹${totalFees.toFixed(2)}</span><div class="tooltip">Click to copy</div>`;
+                resultItems[2].setAttribute('data-value', totalFees.toFixed(2));
+                
+                resultItems[3].innerHTML = `<span>Amount After Deduction:</span> <span>₹${amountAfterDeduction.toFixed(2)}</span><div class="tooltip">Click to copy</div>`;
+                resultItems[3].setAttribute('data-value', amountAfterDeduction.toFixed(2));
+            });
+            
+            // Reverse calculation
+            document.getElementById('calculate-principal').addEventListener('click', function() {
+                const finalAmount = parseFloat(document.getElementById('final-amount').value);
+                if (isNaN(finalAmount)) {
+                    alert('Please enter a valid final amount');
+                    return;
+                }
+                
+                const feePercentage = parseFloat(document.querySelector('input[name="reverse-card-type"]:checked').value);
+                const taxPercentage = settings.taxRate;
+                
+                // Formula from your Excel: =E9/(1-C9/100-C9*D9/10000)
+                const principal = finalAmount / (1 - feePercentage/100 - feePercentage*taxPercentage/10000);
+                const stripeFee = principal * feePercentage / 100;
+                const stripeFeeTax = stripeFee * taxPercentage / 100;
+                const totalFees = stripeFee + stripeFeeTax;
+                
+                const result = document.getElementById('reverse-result');
+                const resultItems = result.querySelectorAll('.result-item');
+                
+                resultItems[0].innerHTML = `<span>Stripe Fee (${feePercentage}%):</span> <span>₹${stripeFee.toFixed(2)}</span><div class="tooltip">Click to copy</div>`;
+                resultItems[0].setAttribute('data-value', stripeFee.toFixed(2));
+                
+                resultItems[1].innerHTML = `<span>Tax (${taxPercentage}% on fee):</span> <span>₹${stripeFeeTax.toFixed(2)}</span><div class="tooltip">Click to copy</div>`;
+                resultItems[1].setAttribute('data-value', stripeFeeTax.toFixed(2));
+                
+                resultItems[2].innerHTML = `<span>Total Fees:</span> <span>₹${totalFees.toFixed(2)}</span><div class="tooltip">Click to copy</div>`;
+                resultItems[2].setAttribute('data-value', totalFees.toFixed(2));
+                
+                resultItems[3].innerHTML = `<span>Required Principal Amount:</span> <span>₹${principal.toFixed(2)}</span><div class="tooltip">Click to copy</div>`;
+                resultItems[3].setAttribute('data-value', principal.toFixed(2));
+            });
+            
+            // Copy to clipboard functionality
+            const resultItems = document.querySelectorAll('.result-item');
+            const copyNotification = document.getElementById('copy-notification');
+            
+            resultItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    if (value) {
+                        navigator.clipboard.writeText(value).then(() => {
+                            copyNotification.classList.add('show');
+                            setTimeout(() => {
+                                copyNotification.classList.remove('show');
+                            }, 2000);
+                        });
+                    }
+                });
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === settingsModal) {
+                    settingsModal.style.display = 'none';
+                }
+                if (event.target === infoModal) {
+                    infoModal.style.display = 'none';
+                }
+            });
+            
+            // Set reverse calculation as default
+            document.querySelector('.tab[data-tab="reverse"]').click();
+        });
+    </script>
+</body>
+</html>
